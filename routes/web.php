@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BerandaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Ubah rute utama ('/') agar mengarah ke BerandaController
+Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
