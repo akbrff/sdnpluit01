@@ -18,3 +18,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+use App\Http\Controllers\Admin\KategoriBeritaController;
+use App\Http\Controllers\Admin\BeritaController;
+use App\Http\Controllers\Admin\GaleriController;
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Modul Kategori Berita
+    Route::resource('kategori-berita', KategoriBeritaController::class)->except(['show']);
+
+    // Modul Berita & Pengumuman
+    Route::resource('berita', BeritaController::class);
+
+    // Modul Galeri & Album
+    Route::resource('galeri', GaleriController::class);
+    Route::delete('galeri/foto/{id}', [GaleriController::class, 'destroyFoto'])->name('galeri.foto.destroy');
+});
