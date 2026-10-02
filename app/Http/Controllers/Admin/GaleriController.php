@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GaleriRequest;
 use App\Models\Galeri;
 use App\Models\FotoGaleri;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,17 +22,8 @@ class GaleriController extends Controller
         return view('admin.galeri.create');
     }
 
-    public function store(Request $request)
+    public function store(GaleriRequest $request)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal_kegiatan' => 'required|date',
-            'aktif' => 'required|boolean',
-            'foto' => 'required|array',
-            'foto.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
-
         $galeri = Galeri::create([
             'judul' => $request->judul,
             'slug' => Str::slug($request->judul),
@@ -63,17 +54,9 @@ class GaleriController extends Controller
         return view('admin.galeri.edit', compact('galeri'));
     }
 
-    public function update(Request $request, $id)
+    public function update(GaleriRequest $request, $id)
     {
         $galeri = Galeri::findOrFail($id);
-
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal_kegiatan' => 'required|date',
-            'aktif' => 'required|boolean',
-            'foto.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
 
         $galeri->update([
             'judul' => $request->judul,
