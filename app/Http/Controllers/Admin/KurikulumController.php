@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\KurikulumRequest;
 use App\Models\Kurikulum;
-use Illuminate\Http\Request;
 
 class KurikulumController extends Controller
 {
     public function index()
     {
-        // Menampilkan daftar kurikulum urut dari yang terbaru
-        $kurikulum = Kurikulum::orderBy('dibuat_pada', 'desc')->get();
-        return view('admin.kurikulum.index', compact('kurikulum'));
+        $items = Kurikulum::orderByDesc('id')->get();
+
+        return view('admin.kurikulum.index', compact('items'));
     }
 
     public function create()
@@ -20,59 +20,41 @@ class KurikulumController extends Controller
         return view('admin.kurikulum.create');
     }
 
-    public function store(Request $request)
+    public function store(KurikulumRequest $request)
     {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'url_dokumen' => 'nullable|url',
-        ], [
-            'judul.required' => 'Judul kurikulum wajib diisi.',
-            'url_dokumen.url' => 'Format URL dokumen tidak valid.',
-        ]);
+        $data = $request->validated();
+        $data['aktif'] = $request->boolean('aktif');
 
-        // Tangkap nilai checkbox (jika dicentang bernilai true, jika tidak false)
-        $validated['aktif'] = $request->has('aktif');
+        Kurikulum::create($data);
 
-        Kurikulum::create($validated);
-
-        return redirect()->route('admin.kurikulum.index')
-            ->with('success', 'Data kurikulum berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.kurikulum.index')
+            ->with('sukses', 'Kurikulum berhasil ditambahkan.');
     }
 
-    public function edit(string $id)
+    public function edit(Kurikulum $kurikulum)
     {
-        $kurikulum = Kurikulum::findOrFail($id);
         return view('admin.kurikulum.edit', compact('kurikulum'));
     }
 
-    public function update(Request $request, string $id)
+    public function update(KurikulumRequest $request, Kurikulum $kurikulum)
     {
-        $kurikulum = Kurikulum::findOrFail($id);
+        $data = $request->validated();
+        $data['aktif'] = $request->boolean('aktif');
 
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'url_dokumen' => 'nullable|url',
-        ], [
-            'judul.required' => 'Judul kurikulum wajib diisi.',
-            'url_dokumen.url' => 'Format URL dokumen tidak valid.',
-        ]);
+        $kurikulum->update($data);
 
-        $validated['aktif'] = $request->has('aktif');
-
-        $kurikulum->update($validated);
-
-        return redirect()->route('admin.kurikulum.index')
-            ->with('success', 'Data kurikulum berhasil diperbarui.');
+        return redirect()
+            ->route('admin.kurikulum.index')
+            ->with('sukses', 'Kurikulum berhasil diperbarui.');
     }
 
-    public function destroy(string $id)
+    public function destroy(Kurikulum $kurikulum)
     {
-        $kurikulum = Kurikulum::findOrFail($id);
         $kurikulum->delete();
 
-        return redirect()->route('admin.kurikulum.index')
-            ->with('success', 'Data kurikulum berhasil dihapus.');
+        return redirect()
+            ->route('admin.kurikulum.index')
+            ->with('sukses', 'Kurikulum berhasil dihapus.');
     }
 }
