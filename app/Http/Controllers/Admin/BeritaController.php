@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BeritaRequest;
 use App\Models\BeritaPengumuman;
 use App\Models\KategoriBerita;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -23,17 +23,8 @@ class BeritaController extends Controller
         return view('admin.berita.create', compact('kategori'));
     }
 
-    public function store(Request $request)
+    public function store(BeritaRequest $request)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255|unique:berita_pengumuman,judul',
-            'isi' => 'required|string',
-            'gambar_sampul' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status' => 'required|in:draft,terbit',
-            'kategori' => 'required|array|min:1',
-            'kategori.*' => 'exists:kategori_berita,id',
-        ]);
-
         $path = $request->file('gambar_sampul')->store('berita', 'public');
 
         $berita = BeritaPengumuman::create([
@@ -47,8 +38,7 @@ class BeritaController extends Controller
 
         $berita->kategori()->attach($request->kategori);
 
-        return redirect()->route('admin.berita.index')
-            ->with('sukses', 'Berita berhasil ditambahkan.');
+        return redirect()->route('admin.berita.index')->with('sukses', 'Berita berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -58,18 +48,9 @@ class BeritaController extends Controller
         return view('admin.berita.edit', compact('berita', 'kategori'));
     }
 
-    public function update(Request $request, $id)
+    public function update(BeritaRequest $request, $id)
     {
         $berita = BeritaPengumuman::findOrFail($id);
-
-        $request->validate([
-            'judul' => 'required|string|max:255|unique:berita_pengumuman,judul,' . $id,
-            'isi' => 'required|string',
-            'gambar_sampul' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status' => 'required|in:draft,terbit',
-            'kategori' => 'required|array|min:1',
-            'kategori.*' => 'exists:kategori_berita,id',
-        ]);
 
         $data = [
             'judul' => $request->judul,
@@ -92,8 +73,7 @@ class BeritaController extends Controller
         $berita->update($data);
         $berita->kategori()->sync($request->kategori);
 
-        return redirect()->route('admin.berita.index')
-            ->with('sukses', 'Berita berhasil diperbarui.');
+        return redirect()->route('admin.berita.index')->with('sukses', 'Berita berhasil diperbarui.');
     }
 
     public function destroy($id)
@@ -107,7 +87,6 @@ class BeritaController extends Controller
         $berita->kategori()->detach();
         $berita->delete();
 
-        return redirect()->route('admin.berita.index')
-            ->with('sukses', 'Berita berhasil dihapus.');
+        return redirect()->route('admin.berita.index')->with('sukses', 'Berita berhasil dihapus.');
     }
 }
