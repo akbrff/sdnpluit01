@@ -6,24 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kurikulum extends Model
 {
-    /**
-     * Nama tabel yang terhubung dengan model.
-     *
-     * @var string
-     */
     protected $table = 'kurikulum';
 
-    /**
-     * Penyesuaian nama kolom timestamp khusus untuk proyek ini.
-     */
-    const CREATED_AT = 'dibuat_pada';
-    const UPDATED_AT = 'diperbarui_pada';
-
-    /**
-     * Atribut yang dapat diisi secara massal (mass assignable).
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'judul',
         'deskripsi',
@@ -31,12 +15,15 @@ class Kurikulum extends Model
         'aktif',
     ];
 
-    /**
-     * Atribut yang harus di-cast ke tipe data bawaan.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'aktif' => 'boolean',
     ];
+
+    // Tabel kurikulum hanya punya kolom diperbarui_pada, yang diisi otomatis oleh database.
+    public $timestamps = false;
+
+    public function scopeAktif($query)
+    {
+        return $query->where('aktif', true);
+    }
 }

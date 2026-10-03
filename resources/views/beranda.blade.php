@@ -1,23 +1,8 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beranda - {{ $profil->nama_sekolah ?? 'SDN Pluit 01' }}</title>
-    <!-- Script untuk memanggil Tailwind CSS -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-50 text-gray-800 antialiased font-sans">
+@extends('layouts.public')
 
-    <!-- NAVBAR SEDERHANA -->
-    <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-xl text-blue-700">
-                {{ $profil->nama_sekolah ?? 'SDN Pluit 01' }}
-            </h1>
-            <a href="/login" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">Login Admin</a>
-        </div>
-    </nav>
+@section('title', 'Beranda')
+
+@section('content')
 
     <!-- HERO SECTION -->
     <header class="bg-blue-600 text-white text-center py-20 px-4">
@@ -38,7 +23,6 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @forelse ($berita_terbaru as $berita)
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                    <!-- Jika ada gambar, tampilkan. Jika tidak, pakai warna abu-abu -->
                     <div class="h-48 bg-gray-200">
                         @if($berita->gambar_sampul)
                             <img src="{{ asset('storage/'.$berita->gambar_sampul) }}" class="w-full h-full object-cover">
@@ -84,22 +68,4 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="bg-gray-800 text-gray-300 py-10 px-4">
-        <div class="container mx-auto text-center md:text-left grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-                <h3 class="text-xl font-bold text-white mb-2">{{ $profil->nama_sekolah ?? 'SDN Pluit 01' }}</h3>
-                <p>{{ $profil->alamat ?? 'Jl. Pluit Selatan I No.1, RT.1/RW.6, Kel. Pluit, Kec. Penjaringan, Jakarta Utara 14450' }}</p>
-            </div>
-            <div class="md:text-right">
-                <p>Email: {{ $profil->email ?? 'info@sdnpluit01bersatu.my.id' }}</p>
-                <p>Telepon: {{ $profil->telepon ?? '-' }}</p>
-            </div>
-        </div>
-        <div class="text-center mt-8 pt-4 border-t border-gray-700 text-sm">
-            &copy; {{ date('Y') }} {{ $profil->nama_sekolah ?? 'SDN Pluit 01' }}. Dikembangkan oleh Tim PKM Teknik Informatika Universitas Pamulang.
-        </div>
-    </footer>
-
-</body>
-</html>
+@endsection
