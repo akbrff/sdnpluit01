@@ -14,16 +14,22 @@ class BeritaPublicController extends Controller
             ->where('status', 'terbit')
             ->latest('diterbitkan_pada');
 
-        if ($request->has('kategori')) {
+        if ($request->filled('kategori')) {
             $query->whereHas('kategori', function ($q) use ($request) {
                 $q->where('slug', $request->kategori);
             });
         }
 
-        $berita = $query->paginate(9);
-        $kategori = KategoriBerita::all();
+        $berita = $query
+            ->paginate(9)
+            ->withQueryString();
 
-        return view('berita.index', compact('berita', 'kategori'));
+        $kategori = KategoriBerita::orderBy('nama')->get();
+
+        return view('berita.index', [
+            'berita' => $berita,
+            'kategori' => $kategori,
+        ]);
     }
 
     public function show(BeritaPengumuman $beritaPengumuman)
@@ -33,12 +39,17 @@ class BeritaPublicController extends Controller
         }
 
         $beritaPengumuman->load('kategori');
-        $beritaTerkait = BeritaPengumuman::where('status', 'terbit')
+
+        $beritaTerkait = BeritaPengumuman::with('kategori')
+            ->where('status', 'terbit')
             ->where('id', '!=', $beritaPengumuman->id)
             ->latest('diterbitkan_pada')
             ->take(3)
             ->get();
 
-        return view('berita.show', compact('beritaPengumuman', 'beritaTerkait'));
+        return view('berita.show', [
+            'beritaPengumuman' => $beritaPengumuman,
+            'beritaTerkait' => $beritaTerkait,
+        ]);
     }
 }

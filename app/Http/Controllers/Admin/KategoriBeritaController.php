@@ -12,6 +12,7 @@ class KategoriBeritaController extends Controller
     public function index()
     {
         $kategori = KategoriBerita::latest('id')->paginate(10);
+
         return view('admin.kategori-berita.index', compact('kategori'));
     }
 
@@ -24,35 +25,65 @@ class KategoriBeritaController extends Controller
     {
         KategoriBerita::create([
             'nama' => $request->nama,
-            'slug' => Str::slug($request->nama),
+            'slug' => $this->buatSlugUnik($request->nama),
         ]);
 
-        return redirect()->route('admin.kategori-berita.index')->with('sukses', 'Kategori berita berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.kategori-berita.index')
+            ->with('sukses', 'Kategori berita berhasil ditambahkan.');
     }
 
-    public function edit($id)
+    public function edit(KategoriBerita $kategori_berita)
     {
-        $kategori = KategoriBerita::findOrFail($id);
-        return view('admin.kategori-berita.edit', compact('kategori'));
+        return view('admin.kategori-berita.edit', [
+            'kategori' => $kategori_berita,
+        ]);
     }
 
-    public function update(KategoriBeritaRequest $request, $id)
-    {
-        $kategori = KategoriBerita::findOrFail($id);
-        $kategori->update([
+    public function update(
+        KategoriBeritaRequest $request,
+        KategoriBerita $kategori_berita
+    ) {
+        $kategori_berita->update([
             'nama' => $request->nama,
-            'slug' => Str::slug($request->nama),
+            'slug' => $this->buatSlugUnik(
+                $request->nama,
+                $kategori_berita->id
+            ),
         ]);
 
-        return redirect()->route('admin.kategori-berita.index')->with('sukses', 'Kategori berita berhasil diperbarui.');
+        return redirect()
+            ->route('admin.kategori-berita.index')
+            ->with('sukses', 'Kategori berita berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(KategoriBerita $kategori_berita)
     {
-        $kategori = KategoriBerita::findOrFail($id);
-        $kategori->berita()->detach();
-        $kategori->delete();
+        $kategori_berita->berita()->detach();
+        $kategori_berita->delete();
 
-        return redirect()->route('admin.kategori-berita.index')->with('sukses', 'Kategori berita berhasil dihapus.');
+        return redirect()
+            ->route('admin.kategori-berita.index')
+            ->with('sukses', 'Kategori berita berhasil dihapus.');
+    }
+
+    private function buatSlugUnik(string $nama, ?int $id = null): string
+    {
+        $slugDasar = Str::slug($nama);
+        $slug = $slugDasar;
+        $nomor = 1;
+
+        while (
+            KategoriBerita::where('slug', $slug)
+                ->when($id, function ($query) use ($id) {
+                    $query->where('id', '!=', $id);
+                })
+                ->exists()
+        ) {
+            $slug = $slugDasar . '-' . $nomor;
+            $nomor++;
+        }
+
+        return $slug;
     }
 }
