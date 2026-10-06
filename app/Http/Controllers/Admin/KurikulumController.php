@@ -34,7 +34,9 @@ class KurikulumController extends Controller
 
     public function edit(Kurikulum $kurikulum)
     {
-        return view('admin.kurikulum.edit', compact('kurikulum'));
+        return view('admin.kurikulum.edit', [
+            'item' => $kurikulum,
+        ]);
     }
 
     public function update(KurikulumRequest $request, Kurikulum $kurikulum)
