@@ -5,6 +5,7 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\Admin\StrukturOrganisasiController;
 use App\Http\Controllers\StrukturOrganisasiPublicController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ProfilStatistikController;
 
 
 // Ubah rute utama ('/') agar mengarah ke BerandaController
@@ -24,6 +25,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('admin/struktur-organisasi', StrukturOrganisasiController::class)
     ->names('admin.struktur-organisasi')
     ->except(['show']); // halaman "show" tunggal tidak dipakai, cukup index/create/edit
+});
+
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+    // ... (route modul lain)
+    
+    // Route Profil & Statistik (Hanya edit & update)
+    Route::get('/profil-statistik', [ProfilStatistikController::class, 'edit'])->name('profil-statistik.edit');
+    Route::put('/profil-statistik', [ProfilStatistikController::class, 'update'])->name('profil-statistik.update');
 });
 
 require __DIR__.'/auth.php';

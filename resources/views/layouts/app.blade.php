@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Link Modul (Nanti href-nya disesuaikan oleh anggota tim) -->
-                <a href="#" class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">
+                <a href="{{ route('admin.profil-statistik.edit') }}" class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">
                     <span>Profil & Statistik</span>
                 </a>
                 <a href="{{ route('admin.struktur-organisasi.index') }}" class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">
