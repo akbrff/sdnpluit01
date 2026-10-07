@@ -71,7 +71,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
     <!-- ================= SECTION BERITA TERBARU ================= -->
     <div class="py-16 bg-gray-50 border-t border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,7 +145,3 @@
             </div>
         </div>
     </div>
-@endsection
-=======
-@endsection
->>>>>>> d877299 (fix: model dan controller kurikulum, view index, dan View Composer profilLayout)
