@@ -8,6 +8,9 @@ class Kurikulum extends Model
 {
     protected $table = 'kurikulum';
 
+    const CREATED_AT = null;
+    const UPDATED_AT = 'diperbarui_pada';
+
     protected $fillable = [
         'judul',
         'deskripsi',
@@ -18,9 +21,6 @@ class Kurikulum extends Model
     protected $casts = [
         'aktif' => 'boolean',
     ];
-
-    // Tabel kurikulum hanya punya kolom diperbarui_pada, yang diisi otomatis oleh database.
-    public $timestamps = false;
 
     public function scopeAktif($query)
     {

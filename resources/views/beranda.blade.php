@@ -115,9 +115,8 @@
                 @if(isset($galeri_pilihan) && count($galeri_pilihan) > 0)
                     @foreach($galeri_pilihan as $galeri)
                         <div class="relative group rounded-xl overflow-hidden shadow-sm bg-gray-100 h-64 border border-gray-200">
-                            <!-- Catatan: Sesuaikan relasi 'foto_galeri' di bawah ini dengan nama method relasi di Model Galeri Anda -->
-                            @if($galeri->foto_galeri && $galeri->foto_galeri->count() > 0)
-                                <img src="{{ Storage::url($galeri->foto_galeri->first()->lokasi_gambar) }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            @if($galeri->foto && $galeri->foto->count() > 0)
+                                <img src="{{ Storage::url($galeri->foto->first()->lokasi_gambar) }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-gray-400">Tanpa Foto</div>
                             @endif
@@ -145,3 +144,4 @@
             </div>
         </div>
     </div>
+@endsection
