@@ -2,11 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaPublicController;
 use App\Http\Controllers\GaleriPublicController;
 use App\Http\Controllers\StrukturOrganisasiPublicController;
 
+use App\Http\Controllers\Admin\ProfilStatistikController;
 use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\BeritaController;
 use App\Http\Controllers\Admin\GaleriController;
@@ -58,11 +60,33 @@ Route::get(
 // =========================
 
 Route::get('/dashboard', function () {
-    return redirect()
-        ->route('admin.kategori-berita.index');
+    return view('dashboard');
 })
-    ->middleware(['auth'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+
+// =========================
+// PROFILE
+// =========================
+
+Route::middleware('auth')->group(function () {
+
+    Route::get(
+        '/profile',
+        [ProfileController::class, 'edit']
+    )->name('profile.edit');
+
+    Route::patch(
+        '/profile',
+        [ProfileController::class, 'update']
+    )->name('profile.update');
+
+    Route::delete(
+        '/profile',
+        [ProfileController::class, 'destroy']
+    )->name('profile.destroy');
+});
 
 
 // =========================
@@ -74,6 +98,25 @@ Route::middleware(['auth'])
     ->name('admin.')
     ->group(function () {
 
+        // =========================
+        // PROFIL & STATISTIK
+        // =========================
+
+        Route::get(
+            '/profil-statistik',
+            [ProfilStatistikController::class, 'edit']
+        )->name('profil-statistik.edit');
+
+        Route::put(
+            '/profil-statistik',
+            [ProfilStatistikController::class, 'update']
+        )->name('profil-statistik.update');
+
+
+        // =========================
+        // KATEGORI BERITA
+        // =========================
+
         Route::resource(
             'kategori-berita',
             KategoriBeritaController::class
@@ -84,6 +127,10 @@ Route::middleware(['auth'])
             ->except(['show']);
 
 
+        // =========================
+        // BERITA
+        // =========================
+
         Route::resource(
             'berita',
             BeritaController::class
@@ -93,6 +140,10 @@ Route::middleware(['auth'])
             ])
             ->except(['show']);
 
+
+        // =========================
+        // GALERI
+        // =========================
 
         Route::delete(
             'galeri/foto/{foto}',
@@ -105,6 +156,10 @@ Route::middleware(['auth'])
             GaleriController::class
         )->except(['show']);
 
+
+        // =========================
+        // STRUKTUR ORGANISASI
+        // =========================
 
         Route::resource(
             'struktur-organisasi',

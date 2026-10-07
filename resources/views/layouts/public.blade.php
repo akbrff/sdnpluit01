@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>
-        @yield('title', 'SDN Pluit 01') -
+        @yield('title', 'Beranda') -
         {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}
     </title>
 
+    {{-- Fonts --}}
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link
+        href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap"
+        rel="stylesheet"
+    />
+
+    {{-- Tailwind & AlpineJS --}}
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
@@ -23,145 +27,99 @@
         [x-cloak] {
             display: none !important;
         }
-
-        /* =========================
-           MOBILE / TABLET
-        ========================== */
-
-        .navbar-main {
-            display: flex;
-            height: 64px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .desktop-menu,
-        .desktop-login {
-            display: none;
-        }
-
-        .mobile-navbar-button {
-            display: flex;
-            align-items: center;
-        }
-
-
-        /* =========================
-           DESKTOP
-        ========================== */
-
-        @media (min-width: 1024px) {
-
-            .navbar-main {
-                display: grid;
-
-                /* kiri - tengah - kanan */
-                grid-template-columns: 1fr auto 1fr;
-
-                height: 64px;
-
-                align-items: center;
-            }
-
-            .navbar-brand {
-                justify-self: start;
-            }
-
-            .desktop-menu {
-                display: flex;
-                align-items: center;
-
-                /* Jarak antar menu */
-                column-gap: 28px;
-
-                justify-self: center;
-                white-space: nowrap;
-            }
-
-            .desktop-login {
-                display: flex;
-                align-items: center;
-                justify-self: end;
-            }
-
-            .mobile-navbar-button {
-                display: none;
-            }
-
-            .mobile-navbar-menu {
-                display: none !important;
-            }
-        }
     </style>
 </head>
 
-
-<body class="bg-gray-50 font-sans text-gray-800 antialiased">
+<body
+    class="flex min-h-screen flex-col bg-gray-50 font-sans text-gray-800 antialiased"
+    x-data="{ mobileMenuOpen: false }"
+>
 
 
     {{-- ==========================================
         NAVBAR
     =========================================== --}}
-    <nav
-        x-data="{ open: false }"
-        class="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm"
-    >
+    <nav class="sticky top-0 z-50 bg-white shadow-md">
 
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-            <div class="navbar-main">
+            <div class="flex h-20 justify-between">
 
 
-                {{-- =========================
-                    NAMA SEKOLAH
-                ========================== --}}
-                <div class="navbar-brand">
+                {{-- Logo & Nama Sekolah --}}
+                <div class="flex items-center">
 
                     <a
                         href="{{ route('beranda') }}"
-                        class="text-lg font-bold text-blue-700 transition hover:text-blue-800 sm:text-xl"
+                        class="flex items-center gap-3"
                     >
-                        {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}
+
+                        @if(isset($profilLayout->logo) && $profilLayout->logo)
+
+                            <img
+                                src="{{ Storage::url($profilLayout->logo) }}"
+                                alt="Logo {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}"
+                                class="h-12 w-auto object-contain"
+                            >
+
+                        @endif
+
+
+                        <div class="flex flex-col">
+
+                            <span class="text-xl font-bold uppercase leading-tight tracking-wide text-blue-800">
+                                {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}
+                            </span>
+
+                            <span class="text-xs font-medium text-gray-500">
+                                Unggul dan Berkarakter
+                            </span>
+
+                        </div>
+
                     </a>
 
                 </div>
 
 
-                {{-- =========================
+                {{-- ==========================================
                     MENU DESKTOP
-                ========================== --}}
-                <div class="desktop-menu">
+                =========================================== --}}
+                <div class="hidden items-center space-x-6 md:flex">
 
                     <a
                         href="{{ route('beranda') }}"
-                        class="text-sm font-medium transition
+                        class="font-medium transition-colors duration-200
                         {{ request()->routeIs('beranda')
-                            ? 'font-semibold text-blue-700'
+                            ? 'text-blue-700'
                             : 'text-gray-600 hover:text-blue-700' }}"
                     >
                         Beranda
                     </a>
 
 
+                    {{-- Belum ada route public Profil lengkap --}}
                     <a
                         href="#"
-                        class="text-sm font-medium text-gray-600 transition hover:text-blue-700"
+                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
                     >
                         Profil
                     </a>
 
 
+                    {{-- Belum ada route public Akademik --}}
                     <a
                         href="#"
-                        class="text-sm font-medium text-gray-600 transition hover:text-blue-700"
+                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
                     >
                         Akademik
                     </a>
 
 
+                    {{-- Belum ada route public Fasilitas --}}
                     <a
                         href="#"
-                        class="text-sm font-medium text-gray-600 transition hover:text-blue-700"
+                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
                     >
                         Fasilitas
                     </a>
@@ -169,9 +127,9 @@
 
                     <a
                         href="{{ route('berita.public') }}"
-                        class="text-sm font-medium transition
-                        {{ request()->routeIs('berita.*')
-                            ? 'font-semibold text-blue-700'
+                        class="font-medium transition-colors duration-200
+                        {{ request()->routeIs('berita.public', 'berita.detail.public')
+                            ? 'text-blue-700'
                             : 'text-gray-600 hover:text-blue-700' }}"
                     >
                         Berita
@@ -180,57 +138,33 @@
 
                     <a
                         href="{{ route('galeri.public') }}"
-                        class="text-sm font-medium transition
-                        {{ request()->routeIs('galeri.*')
-                            ? 'font-semibold text-blue-700'
+                        class="font-medium transition-colors duration-200
+                        {{ request()->routeIs('galeri.public', 'galeri.detail.public')
+                            ? 'text-blue-700'
                             : 'text-gray-600 hover:text-blue-700' }}"
                     >
                         Galeri
                     </a>
 
-
-                    <a
-                        href="#"
-                        class="text-sm font-medium text-gray-600 transition hover:text-blue-700"
-                    >
-                        Kontak/PPDB
-                    </a>
-
                 </div>
 
 
-                {{-- =========================
-                    LOGIN ADMIN DESKTOP
-                ========================== --}}
-                <div class="desktop-login">
-
-                    <a
-                        href="/login"
-                        class="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-                    >
-                        Login Admin
-                    </a>
-
-                </div>
-
-
-                {{-- =========================
+                {{-- ==========================================
                     HAMBURGER MOBILE
-                ========================== --}}
-                <div class="mobile-navbar-button">
+                =========================================== --}}
+                <div class="flex items-center md:hidden">
 
                     <button
+                        @click="mobileMenuOpen = !mobileMenuOpen"
                         type="button"
-                        @click="open = !open"
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-100"
+                        class="p-2 text-gray-500 hover:text-blue-700 focus:outline-none"
                         aria-label="Buka menu navigasi"
                     >
 
-                        {{-- Icon Garis Tiga --}}
+                        {{-- Hamburger --}}
                         <svg
-                            x-show="!open"
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
+                            x-show="!mobileMenuOpen"
+                            class="h-7 w-7"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -244,12 +178,11 @@
                         </svg>
 
 
-                        {{-- Icon X --}}
+                        {{-- Close --}}
                         <svg
-                            x-show="open"
+                            x-show="mobileMenuOpen"
                             x-cloak
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
+                            class="h-7 w-7"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -268,95 +201,76 @@
 
             </div>
 
-
-            {{-- ==========================================
-                MENU MOBILE
-            =========================================== --}}
-            <div
-                x-show="open"
-                x-cloak
-                x-transition
-                class="mobile-navbar-menu border-t border-gray-200 pb-4 pt-3"
-            >
-
-                <div class="flex flex-col gap-1">
-
-                    <a
-                        href="{{ route('beranda') }}"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium
-                        {{ request()->routeIs('beranda')
-                            ? 'bg-blue-50 font-semibold text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-blue-700' }}"
-                    >
-                        Beranda
-                    </a>
+        </div>
 
 
-                    <a
-                        href="#"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700"
-                    >
-                        Profil
-                    </a>
+        {{-- ==========================================
+            MENU MOBILE
+        =========================================== --}}
+        <div
+            x-show="mobileMenuOpen"
+            x-cloak
+            x-transition
+            class="border-t border-gray-100 bg-white shadow-inner md:hidden"
+        >
+
+            <div class="space-y-1 px-4 pb-4 pt-2">
+
+                <a
+                    href="{{ route('beranda') }}"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium
+                    {{ request()->routeIs('beranda')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}"
+                >
+                    Beranda
+                </a>
 
 
-                    <a
-                        href="#"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700"
-                    >
-                        Akademik
-                    </a>
+                <a
+                    href="#"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                >
+                    Profil
+                </a>
 
 
-                    <a
-                        href="#"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700"
-                    >
-                        Fasilitas
-                    </a>
+                <a
+                    href="#"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                >
+                    Akademik
+                </a>
 
 
-                    <a
-                        href="{{ route('berita.public') }}"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium
-                        {{ request()->routeIs('berita.*')
-                            ? 'bg-blue-50 font-semibold text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-blue-700' }}"
-                    >
-                        Berita
-                    </a>
+                <a
+                    href="#"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                >
+                    Fasilitas
+                </a>
 
 
-                    <a
-                        href="{{ route('galeri.public') }}"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium
-                        {{ request()->routeIs('galeri.*')
-                            ? 'bg-blue-50 font-semibold text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-blue-700' }}"
-                    >
-                        Galeri
-                    </a>
+                <a
+                    href="{{ route('berita.public') }}"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium
+                    {{ request()->routeIs('berita.public', 'berita.detail.public')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}"
+                >
+                    Berita
+                </a>
 
 
-                    <a
-                        href="#"
-                        class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700"
-                    >
-                        Kontak/PPDB
-                    </a>
-
-
-                    <div class="my-2 border-t border-gray-200"></div>
-
-
-                    <a
-                        href="/login"
-                        class="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
-                    >
-                        Login Admin
-                    </a>
-
-                </div>
+                <a
+                    href="{{ route('galeri.public') }}"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium
+                    {{ request()->routeIs('galeri.public', 'galeri.detail.public')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}"
+                >
+                    Galeri
+                </a>
 
             </div>
 
@@ -366,9 +280,9 @@
 
 
     {{-- ==========================================
-        CONTENT
+        AREA KONTEN UTAMA
     =========================================== --}}
-    <main>
+    <main class="flex-grow">
         @yield('content')
     </main>
 
@@ -376,58 +290,228 @@
     {{-- ==========================================
         FOOTER
     =========================================== --}}
-    <footer class="bg-gray-800 px-4 py-10 text-gray-300">
+    <footer class="mt-auto border-t-4 border-yellow-400 bg-blue-900 pb-8 pt-16 text-white">
 
-        <div
-            class="mx-auto grid max-w-7xl grid-cols-1 gap-8 text-center md:grid-cols-2 md:text-left"
-        >
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-            <div>
+            <div class="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8">
 
-                <h3 class="mb-2 text-xl font-bold text-white">
-                    {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}
-                </h3>
 
-                <p class="text-sm leading-relaxed">
-                    {{ $profilLayout->alamat
-                        ?? 'Jl. Pluit Selatan I No.1, RT.1/RW.6, Kel. Pluit, Kec. Penjaringan, Jakarta Utara 14450' }}
-                </p>
+                {{-- Identitas Sekolah --}}
+                <div>
+
+                    <div class="mb-6 flex items-center gap-3">
+
+                        @if(isset($profilLayout->logo) && $profilLayout->logo)
+
+                            <img
+                                src="{{ Storage::url($profilLayout->logo) }}"
+                                alt="Logo {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}"
+                                class="h-14 w-auto rounded-lg bg-white p-1"
+                            >
+
+                        @endif
+
+
+                        <h3 class="text-2xl font-bold tracking-wide">
+                            {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}
+                        </h3>
+
+                    </div>
+
+
+                    <p class="mb-4 text-sm leading-relaxed text-blue-200">
+                        {{ $profilLayout->ringkasan_profil
+                            ?? 'Mewujudkan generasi cerdas, berkarakter, dan peduli lingkungan.' }}
+                    </p>
+
+                </div>
+
+
+                {{-- Tautan Cepat --}}
+                <div>
+
+                    <h4 class="mb-6 text-lg font-bold uppercase tracking-wider">
+                        Tautan Cepat
+                    </h4>
+
+
+                    <ul class="space-y-3 text-sm text-blue-200">
+
+                        <li>
+                            <a
+                                href="{{ route('beranda') }}"
+                                class="flex items-center gap-2 transition-colors hover:text-yellow-400"
+                            >
+                                <span class="text-yellow-400">&bull;</span>
+                                Beranda
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a
+                                href="#"
+                                class="flex items-center gap-2 transition-colors hover:text-yellow-400"
+                            >
+                                <span class="text-yellow-400">&bull;</span>
+                                Profil Sekolah
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a
+                                href="{{ route('berita.public') }}"
+                                class="flex items-center gap-2 transition-colors hover:text-yellow-400"
+                            >
+                                <span class="text-yellow-400">&bull;</span>
+                                Berita & Pengumuman
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a
+                                href="{{ route('galeri.public') }}"
+                                class="flex items-center gap-2 transition-colors hover:text-yellow-400"
+                            >
+                                <span class="text-yellow-400">&bull;</span>
+                                Galeri Kegiatan
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a
+                                href="https://ppdb.jakarta.go.id"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center gap-2 transition-colors hover:text-yellow-400"
+                            >
+                                <span class="text-yellow-400">&bull;</span>
+                                Info PPDB Jakarta
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                {{-- Kontak --}}
+                <div>
+
+                    <h4 class="mb-6 text-lg font-bold uppercase tracking-wider">
+                        Hubungi Kami
+                    </h4>
+
+
+                    <ul class="space-y-4 text-sm text-blue-200">
+
+                        <li class="flex items-start gap-3">
+
+                            <svg
+                                class="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                            </svg>
+
+
+                            <span class="leading-relaxed">
+                                {{ $profilLayout->alamat
+                                    ?? 'Jl. Pluit Selatan I No.1, RT.1/RW.6, Kel. Pluit, Kec. Penjaringan, Jakarta Utara' }}
+                            </span>
+
+                        </li>
+
+
+                        <li class="flex items-center gap-3">
+
+                            <svg
+                                class="h-5 w-5 flex-shrink-0 text-yellow-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                />
+                            </svg>
+
+
+                            <span>
+                                {{ $profilLayout->telepon ?? '-' }}
+                            </span>
+
+                        </li>
+
+
+                        <li class="flex items-center gap-3">
+
+                            <svg
+                                class="h-5 w-5 flex-shrink-0 text-yellow-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                            </svg>
+
+
+                            <span>
+                                {{ $profilLayout->email ?? '-' }}
+                            </span>
+
+                        </li>
+
+                    </ul>
+
+                </div>
 
             </div>
 
 
-            <div class="text-sm md:text-right">
+            <div class="mt-12 flex flex-col items-center justify-between border-t border-blue-800 pt-6 text-sm text-blue-300 md:flex-row">
 
                 <p>
-                    Email:
-                    {{ $profilLayout->email ?? '-' }}
+                    &copy; {{ date('Y') }}
+                    {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}.
+                    Hak Cipta Dilindungi.
                 </p>
 
-                <p class="mt-1">
-                    Telepon:
-                    {{ $profilLayout->telepon ?? '-' }}
+
+                <p class="mt-2 md:mt-0">
+                    Dikelola oleh Tim PKM Universitas Pamulang
                 </p>
 
             </div>
-
-        </div>
-
-
-        <div
-            class="mx-auto mt-8 max-w-7xl border-t border-gray-700 pt-5 text-center text-sm"
-        >
-
-            &copy; {{ date('Y') }}
-
-            {{ $profilLayout->nama_sekolah ?? 'SDN Pluit 01' }}.
-
-            Dikembangkan oleh Tim PKM Teknik Informatika
-            Universitas Pamulang.
 
         </div>
 
     </footer>
-
 
 </body>
 
