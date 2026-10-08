@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\StrukturOrganisasiController;
 use App\Http\Controllers\StrukturOrganisasiPublicController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ProfilStatistikController;
+use App\Http\Controllers\KurikulumPublicController;
+use App\Http\Controllers\Admin\KurikulumController as AdminKurikulumController;
 
 
 // Ubah rute utama ('/') agar mengarah ke BerandaController
@@ -13,6 +15,9 @@ Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 Route::get('/profil/struktur-organisasi', [StrukturOrganisasiPublicController::class, 'index'])
     ->name('struktur-organisasi.public');
+
+Route::get('/akademik/kurikulum', [KurikulumPublicController::class, 'index'])
+    ->name('kurikulum.public');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -28,8 +33,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    // ... (route modul lain)
-    
+    // Kurikulum
+    Route::resource('kurikulum', AdminKurikulumController::class)->except(['show']);
+
     // Route Profil & Statistik (Hanya edit & update)
     Route::get('/profil-statistik', [ProfilStatistikController::class, 'edit'])->name('profil-statistik.edit');
     Route::put('/profil-statistik', [ProfilStatistikController::class, 'update'])->name('profil-statistik.update');
