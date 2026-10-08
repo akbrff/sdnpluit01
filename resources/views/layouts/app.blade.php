@@ -43,7 +43,7 @@
                     <p class="px-4 text-xs font-semibold tracking-wider text-gray-500 uppercase">Manajemen Website</p>
                 </div>
 
-                <!-- Link Modul -->
+                <!-- Link Modul (Nanti href-nya disesuaikan oleh anggota tim) -->
                 <a href="{{ route('admin.profil-statistik.edit') }}" class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors">
                     <span>Profil & Statistik</span>
                 </a>

@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kurikulum extends Model
 {
-    protected $table = 'kurikulum';
-
     const CREATED_AT = null;
     const UPDATED_AT = 'diperbarui_pada';
+
+    protected $table = 'kurikulum';
 
     protected $fillable = [
         'judul',
