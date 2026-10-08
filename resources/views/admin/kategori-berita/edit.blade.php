@@ -22,7 +22,7 @@
 
                     <div class="flex justify-between items-center">
                         <a href="{{ route('admin.kategori-berita.index') }}" class="text-gray-600 hover:underline text-sm font-medium">Batal</a>
-                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow">
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">
                             Perbarui Kategori
                         </button>
                     </div>

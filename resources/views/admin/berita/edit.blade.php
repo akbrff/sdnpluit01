@@ -217,18 +217,19 @@
                             @enderror
                         </div>
 
+                        {{-- Tombol --}}
                         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                             <a
                                 href="{{ route('admin.berita.index') }}"
-                                class="text-center text-sm font-medium text-gray-600 hover:underline"
+                                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                             >
                                 Batal
                             </a>
 
                             <button
                                 type="submit"
-                                class="rounded-lg bg-indigo-600 px-5 py-2.5 font-semibold text-white shadow hover:bg-indigo-700"
+                                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
                             >
                                 Perbarui Berita
                             </button>

@@ -207,7 +207,7 @@
 
                             <button
                                 type="submit"
-                                class="rounded-lg bg-indigo-600 px-5 py-2.5 font-semibold text-white shadow hover:bg-indigo-700"
+                                class="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white shadow hover:bg-blue-700"
                             >
                                 Perbarui Album
                             </button>
