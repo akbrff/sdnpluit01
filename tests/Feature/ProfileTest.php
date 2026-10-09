@@ -39,15 +39,8 @@ test('profile information can be updated', function () {
 
     $admin->refresh();
 
-    $this->assertSame(
-        'Admin Baru',
-        $admin->nama
-    );
-
-    $this->assertSame(
-        'baru@example.com',
-        $admin->email
-    );
+    $this->assertSame('Admin Baru', $admin->nama);
+    $this->assertSame('baru@example.com', $admin->email);
 });
 
 test('admin can keep the same email when updating profile', function () {
@@ -75,10 +68,40 @@ test('admin can keep the same email when updating profile', function () {
     );
 });
 
-test('admin can delete their account', function () {
+test('last admin cannot delete their account', function () {
     $admin = Admin::create([
         'nama' => 'Admin Test',
         'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->from('/profile')
+        ->delete('/profile', [
+            'password' => 'password',
+        ]);
+
+    $response
+        ->assertSessionHasErrorsIn('userDeletion', 'password')
+        ->assertRedirect('/profile');
+
+    $this->assertAuthenticated();
+    $this->assertNotNull($admin->fresh());
+});
+
+test('admin can delete their account when another admin exists', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
+
+    Admin::create([
+        'nama' => 'Admin Kedua',
+        'email' => 'admin2@test.com',
         'kata_sandi' => Hash::make('password'),
         'peran' => 'superadmin',
     ]);
@@ -95,6 +118,10 @@ test('admin can delete their account', function () {
 
     $this->assertGuest();
     $this->assertNull($admin->fresh());
+
+    $this->assertDatabaseHas('admin', [
+        'email' => 'admin2@test.com',
+    ]);
 });
 
 test('correct password must be provided to delete account', function () {

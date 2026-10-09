@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GaleriRequest;
 use App\Models\FotoGaleri;
 use App\Models\Galeri;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Throwable;
 
 class GaleriController extends Controller
 {
@@ -27,23 +30,62 @@ class GaleriController extends Controller
 
     public function store(GaleriRequest $request)
     {
-        $galeri = Galeri::create([
-            'judul' => $request->judul,
-            'slug' => $this->buatSlugUnik($request->judul),
-            'deskripsi' => $request->deskripsi,
-            'tanggal_kegiatan' => $request->tanggal_kegiatan,
-            'aktif' => $request->aktif,
-        ]);
+        $validated = $request->validated();
+        $fotoBaru = [];
 
-        foreach ($request->file('foto') as $index => $file) {
-            $path = $file->store('galeri', 'public');
+        try {
+            /*
+             * Simpan semua file terlebih dahulu.
+             * Jika salah satu gagal, file yang sudah tersimpan
+             * akan dibersihkan pada catch.
+             */
+            foreach ($request->file('foto') as $file) {
+                $path = $file->store('galeri', 'public');
 
-            FotoGaleri::create([
-                'id_galeri' => $galeri->id,
-                'lokasi_gambar' => $path,
-                'keterangan' => $request->judul . ' ' . ($index + 1),
-                'urutan' => $index + 1,
-            ]);
+                if (! $path) {
+                    throw new RuntimeException(
+                        'Gagal menyimpan file galeri.'
+                    );
+                }
+
+                $fotoBaru[] = $path;
+            }
+
+            DB::transaction(function () use ($validated, $fotoBaru) {
+                $galeri = Galeri::create([
+                    'judul' => $validated['judul'],
+                    'slug' => $this->buatSlugUnik(
+                        $validated['judul']
+                    ),
+                    'deskripsi' => $validated['deskripsi'] ?? null,
+                    'tanggal_kegiatan' =>
+                        $validated['tanggal_kegiatan'],
+                    'aktif' => $validated['aktif'],
+                ]);
+
+                foreach ($fotoBaru as $index => $path) {
+                    FotoGaleri::create([
+                        'id_galeri' => $galeri->id,
+                        'lokasi_gambar' => $path,
+                        'keterangan' =>
+                            $validated['judul'] . ' ' . ($index + 1),
+                        'urutan' => $index + 1,
+                    ]);
+                }
+            });
+        } catch (Throwable $e) {
+            foreach ($fotoBaru as $path) {
+                Storage::disk('public')->delete($path);
+            }
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with(
+                    'gagal',
+                    'Album galeri gagal dibuat. Silakan coba kembali.'
+                );
         }
 
         return redirect()
@@ -65,33 +107,80 @@ class GaleriController extends Controller
         GaleriRequest $request,
         Galeri $galeri
     ) {
-        $galeri->update([
-            'judul' => $request->judul,
+        $validated = $request->validated();
+        $fotoBaru = [];
 
-            'slug' => $this->buatSlugUnik(
-                $request->judul,
-                $galeri->id
-            ),
+        try {
+            /*
+             * Upload foto tambahan terlebih dahulu.
+             * Foto lama tidak disentuh.
+             */
+            if ($request->hasFile('foto')) {
+                foreach ($request->file('foto') as $file) {
+                    $path = $file->store('galeri', 'public');
 
-            'deskripsi' => $request->deskripsi,
-            'tanggal_kegiatan' => $request->tanggal_kegiatan,
-            'aktif' => $request->aktif,
-        ]);
+                    if (! $path) {
+                        throw new RuntimeException(
+                            'Gagal menyimpan file galeri.'
+                        );
+                    }
 
-        if ($request->hasFile('foto')) {
-            $lastUrutan = $galeri->foto()->max('urutan') ?? 0;
-
-            foreach ($request->file('foto') as $index => $file) {
-                $path = $file->store('galeri', 'public');
-
-                FotoGaleri::create([
-                    'id_galeri' => $galeri->id,
-                    'lokasi_gambar' => $path,
-                    'keterangan' => $request->judul . ' ' .
-                        ($lastUrutan + $index + 1),
-                    'urutan' => $lastUrutan + $index + 1,
-                ]);
+                    $fotoBaru[] = $path;
+                }
             }
+
+            DB::transaction(function () use (
+                $validated,
+                $galeri,
+                $fotoBaru
+            ) {
+                $galeri->update([
+                    'judul' => $validated['judul'],
+                    'slug' => $this->buatSlugUnik(
+                        $validated['judul'],
+                        $galeri->id
+                    ),
+                    'deskripsi' => $validated['deskripsi'] ?? null,
+                    'tanggal_kegiatan' =>
+                        $validated['tanggal_kegiatan'],
+                    'aktif' => $validated['aktif'],
+                ]);
+
+                if ($fotoBaru) {
+                    $lastUrutan =
+                        $galeri->foto()->max('urutan') ?? 0;
+
+                    foreach ($fotoBaru as $index => $path) {
+                        FotoGaleri::create([
+                            'id_galeri' => $galeri->id,
+                            'lokasi_gambar' => $path,
+                            'keterangan' =>
+                                $validated['judul'] . ' ' .
+                                ($lastUrutan + $index + 1),
+                            'urutan' =>
+                                $lastUrutan + $index + 1,
+                        ]);
+                    }
+                }
+            });
+        } catch (Throwable $e) {
+            /*
+             * Jika upload berhasil tetapi database gagal,
+             * hapus semua file baru.
+             * Foto lama tetap aman.
+             */
+            foreach ($fotoBaru as $path) {
+                Storage::disk('public')->delete($path);
+            }
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with(
+                    'gagal',
+                    'Album galeri gagal diperbarui. Silakan coba kembali.'
+                );
         }
 
         return redirect()
@@ -106,17 +195,51 @@ class GaleriController extends Controller
     {
         $galeri->load('foto');
 
-        foreach ($galeri->foto as $foto) {
+        $daftarFoto = $galeri->foto
+            ->pluck('lokasi_gambar')
+            ->filter()
+            ->values()
+            ->all();
+
+        try {
+            /*
+             * Hapus database terlebih dahulu.
+             * FK cascade akan menghapus record foto_galeri.
+             */
+            DB::transaction(function () use ($galeri) {
+                $galeri->delete();
+            });
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->with(
+                'gagal',
+                'Album galeri gagal dihapus. Silakan coba kembali.'
+            );
+        }
+
+        /*
+         * File fisik baru dibersihkan setelah database sukses.
+         */
+        $fileGagalDihapus = false;
+
+        foreach ($daftarFoto as $path) {
             if (
-                Storage::disk('public')
-                    ->exists($foto->lokasi_gambar)
+                Storage::disk('public')->exists($path) &&
+                ! Storage::disk('public')->delete($path)
             ) {
-                Storage::disk('public')
-                    ->delete($foto->lokasi_gambar);
+                $fileGagalDihapus = true;
             }
         }
 
-        $galeri->delete();
+        if ($fileGagalDihapus) {
+            return redirect()
+                ->route('admin.galeri.index')
+                ->with(
+                    'sukses',
+                    'Album berhasil dihapus, tetapi ada file foto yang gagal dibersihkan.'
+                );
+        }
 
         return redirect()
             ->route('admin.galeri.index')
@@ -128,15 +251,37 @@ class GaleriController extends Controller
 
     public function destroyFoto(FotoGaleri $foto)
     {
-        if (
-            Storage::disk('public')
-                ->exists($foto->lokasi_gambar)
-        ) {
-            Storage::disk('public')
-                ->delete($foto->lokasi_gambar);
+        $path = $foto->lokasi_gambar;
+
+        try {
+            /*
+             * Hapus record database terlebih dahulu.
+             */
+            DB::transaction(function () use ($foto) {
+                $foto->delete();
+            });
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->with(
+                'gagal',
+                'Foto gagal dihapus dari album. Silakan coba kembali.'
+            );
         }
 
-        $foto->delete();
+        /*
+         * Setelah database sukses, baru bersihkan file.
+         */
+        if (
+            $path &&
+            Storage::disk('public')->exists($path) &&
+            ! Storage::disk('public')->delete($path)
+        ) {
+            return back()->with(
+                'sukses',
+                'Foto berhasil dihapus dari album, tetapi file fisik gagal dibersihkan.'
+            );
+        }
 
         return back()
             ->with(
@@ -150,6 +295,7 @@ class GaleriController extends Controller
         ?int $id = null
     ): string {
         $slugDasar = Str::slug($judul);
+
         $slug = $slugDasar;
         $nomor = 1;
 

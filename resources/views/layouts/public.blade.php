@@ -98,31 +98,34 @@
                     </a>
 
 
-                    {{-- Belum ada route public Profil lengkap --}}
                     <a
-                        href="#"
-                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
+                        href="{{ route('struktur-organisasi.public') }}"
+                        class="font-medium transition-colors duration-200
+                        {{ request()->routeIs('struktur-organisasi.public')
+                            ? 'text-blue-700'
+                            : 'text-gray-600 hover:text-blue-700' }}"
                     >
                         Profil
                     </a>
 
 
-                    {{-- Belum ada route public Akademik --}}
                     <a
-                        href="#"
-                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
+                        href="{{ route('kurikulum.public') }}"
+                        class="font-medium transition-colors duration-200
+                        {{ request()->routeIs('kurikulum.public')
+                            ? 'text-blue-700'
+                            : 'text-gray-600 hover:text-blue-700' }}"
                     >
                         Akademik
                     </a>
 
 
-                    {{-- Belum ada route public Fasilitas --}}
-                    <a
-                        href="#"
-                        class="font-medium text-gray-600 transition-colors duration-200 hover:text-blue-700"
+                    <span
+                        class="font-medium text-gray-400 cursor-not-allowed"
+                        title="Halaman Fasilitas belum tersedia"
                     >
                         Fasilitas
-                    </a>
+                    </span>
 
 
                     <a
@@ -228,27 +231,33 @@
 
 
                 <a
-                    href="#"
-                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                    href="{{ route('struktur-organisasi.public') }}"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium
+                    {{ request()->routeIs('struktur-organisasi.public')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}"
                 >
                     Profil
                 </a>
 
 
                 <a
-                    href="#"
-                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                    href="{{ route('kurikulum.public') }}"
+                    class="block rounded-md px-3 py-2.5 text-base font-medium
+                    {{ request()->routeIs('kurikulum.public')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}"
                 >
                     Akademik
                 </a>
 
 
-                <a
-                    href="#"
-                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                <span
+                    class="block rounded-md px-3 py-2.5 text-base font-medium text-gray-400 cursor-not-allowed"
+                    title="Halaman Fasilitas belum tersedia"
                 >
                     Fasilitas
-                </a>
+                </span>
 
 
                 <a
@@ -351,7 +360,7 @@
 
                         <li>
                             <a
-                                href="#"
+                                href="{{ route('struktur-organisasi.public') }}"
                                 class="flex items-center gap-2 transition-colors hover:text-yellow-400"
                             >
                                 <span class="text-yellow-400">&bull;</span>

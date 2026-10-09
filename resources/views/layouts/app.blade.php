@@ -117,21 +117,21 @@
 
 
                 <!-- Ekstrakurikuler -->
-                <a
-                    href="#"
-                    class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+                <div
+                    class="flex items-center px-4 py-2.5 text-gray-500 rounded-lg cursor-not-allowed"
+                    title="Modul Ekstrakurikuler belum tersedia"
                 >
                     <span>Ekstrakurikuler</span>
-                </a>
+                </div>
 
 
                 <!-- Fasilitas -->
-                <a
-                    href="#"
-                    class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+                <div
+                    class="flex items-center px-4 py-2.5 text-gray-500 rounded-lg cursor-not-allowed"
+                    title="Modul Fasilitas belum tersedia"
                 >
                     <span>Fasilitas</span>
-                </a>
+                </div>
 
 
                 <!-- Berita & Kategori -->

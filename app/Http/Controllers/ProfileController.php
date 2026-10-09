@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,9 +49,18 @@ class ProfileController extends Controller
 
         $admin = $request->user();
 
-        Auth::logout();
+        // Cegah penghapusan admin terakhir agar website
+        // tidak kehilangan seluruh akses administrator.
+        if (Admin::query()->count() <= 1) {
+            return Redirect::route('profile.edit')
+                ->withErrors([
+                    'password' => 'Akun admin terakhir tidak dapat dihapus.',
+                ], 'userDeletion');
+        }
 
         $admin->delete();
+
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

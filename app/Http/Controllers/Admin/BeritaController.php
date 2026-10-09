@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BeritaRequest;
 use App\Models\BeritaPengumuman;
 use App\Models\KategoriBerita;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class BeritaController extends Controller
 {
@@ -29,22 +31,39 @@ class BeritaController extends Controller
 
     public function store(BeritaRequest $request)
     {
-        $gambar_sampul = $request
-            ->file('gambar_sampul')
-            ->store('berita', 'public');
+        $validated = $request->validated();
+        $gambarBaru = null;
 
-        $berita = BeritaPengumuman::create([
-            'judul' => $request->judul,
-            'slug' => $this->buatSlugUnik($request->judul),
-            'isi' => $request->isi,
-            'gambar_sampul' => $gambar_sampul,
-            'status' => $request->status,
-            'diterbitkan_pada' => $request->status === 'terbit'
-                ? now()
-                : null,
-        ]);
+        try {
+            $gambarBaru = $request
+                ->file('gambar_sampul')
+                ->store('berita', 'public');
 
-        $berita->kategori()->attach($request->kategori);
+            DB::transaction(function () use ($validated, $gambarBaru) {
+                $berita = BeritaPengumuman::create([
+                    'judul' => $validated['judul'],
+                    'slug' => $this->buatSlugUnik($validated['judul']),
+                    'isi' => $validated['isi'],
+                    'gambar_sampul' => $gambarBaru,
+                    'status' => $validated['status'],
+                    'diterbitkan_pada' => $validated['status'] === 'terbit'
+                        ? now()
+                        : null,
+                ]);
+
+                $berita->kategori()->attach($validated['kategori']);
+            });
+        } catch (Throwable $e) {
+            if ($gambarBaru) {
+                Storage::disk('public')->delete($gambarBaru);
+            }
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('gagal', 'Berita gagal ditambahkan. Silakan coba kembali.');
+        }
 
         return redirect()
             ->route('admin.berita.index')
@@ -67,48 +86,91 @@ class BeritaController extends Controller
         BeritaRequest $request,
         BeritaPengumuman $berita
     ) {
-        $data = [
-            'judul' => $request->judul,
+        $validated = $request->validated();
 
-            'slug' => $this->buatSlugUnik(
-                $request->judul,
-                $berita->id
-            ),
+        $gambarLama = $berita->gambar_sampul;
+        $gambarBaru = null;
 
-            'isi' => $request->isi,
-            'status' => $request->status,
-        ];
-
-        if ($request->status === 'terbit') {
-            $data['diterbitkan_pada'] =
-                $berita->diterbitkan_pada ?? now();
-        } else {
-            $data['diterbitkan_pada'] = null;
-        }
-
-        if ($request->hasFile('gambar_sampul')) {
-
-            if (
-                $berita->gambar_sampul &&
-                Storage::disk('public')->exists(
-                    $berita->gambar_sampul
-                )
-            ) {
-                Storage::disk('public')->delete(
-                    $berita->gambar_sampul
-                );
+        try {
+            /*
+             * Simpan gambar baru terlebih dahulu.
+             * Gambar lama belum dihapus agar tetap aman jika update gagal.
+             */
+            if ($request->hasFile('gambar_sampul')) {
+                $gambarBaru = $request
+                    ->file('gambar_sampul')
+                    ->store('berita', 'public');
             }
 
-            $data['gambar_sampul'] = $request
-                ->file('gambar_sampul')
-                ->store('berita', 'public');
+            DB::transaction(function () use (
+                $berita,
+                $validated,
+                $gambarBaru
+            ) {
+                $data = [
+                    'judul' => $validated['judul'],
+                    'slug' => $this->buatSlugUnik(
+                        $validated['judul'],
+                        $berita->id
+                    ),
+                    'isi' => $validated['isi'],
+                    'status' => $validated['status'],
+                ];
+
+                if ($validated['status'] === 'terbit') {
+                    $data['diterbitkan_pada'] =
+                        $berita->diterbitkan_pada ?? now();
+                } else {
+                    $data['diterbitkan_pada'] = null;
+                }
+
+                if ($gambarBaru) {
+                    $data['gambar_sampul'] = $gambarBaru;
+                }
+
+                $berita->update($data);
+
+                $berita->kategori()->sync(
+                    $validated['kategori']
+                );
+            });
+        } catch (Throwable $e) {
+            /*
+             * Jika upload baru berhasil tetapi database gagal,
+             * hapus file baru agar tidak menjadi file yatim.
+             */
+            if ($gambarBaru) {
+                Storage::disk('public')->delete($gambarBaru);
+            }
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('gagal', 'Berita gagal diperbarui. Silakan coba kembali.');
         }
 
-        $berita->update($data);
+        /*
+         * Gambar lama baru dibersihkan setelah database
+         * berhasil diperbarui.
+         */
+        if (
+            $gambarBaru &&
+            $gambarLama &&
+            Storage::disk('public')->exists($gambarLama)
+        ) {
+            $berhasilDihapus =
+                Storage::disk('public')->delete($gambarLama);
 
-        $berita->kategori()->sync(
-            $request->kategori
-        );
+            if (! $berhasilDihapus) {
+                return redirect()
+                    ->route('admin.berita.index')
+                    ->with(
+                        'sukses',
+                        'Berita berhasil diperbarui, tetapi file sampul lama gagal dibersihkan.'
+                    );
+            }
+        }
 
         return redirect()
             ->route('admin.berita.index')
@@ -117,20 +179,43 @@ class BeritaController extends Controller
 
     public function destroy(BeritaPengumuman $berita)
     {
-        if (
-            $berita->gambar_sampul &&
-            Storage::disk('public')->exists(
-                $berita->gambar_sampul
-            )
-        ) {
-            Storage::disk('public')->delete(
-                $berita->gambar_sampul
+        $gambarLama = $berita->gambar_sampul;
+
+        try {
+            DB::transaction(function () use ($berita) {
+                $berita->kategori()->detach();
+                $berita->delete();
+            });
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->with(
+                'gagal',
+                'Berita gagal dihapus. Silakan coba kembali.'
             );
         }
 
-        $berita->kategori()->detach();
+        /*
+         * File dihapus setelah transaksi database sukses.
+         * Dengan begitu record tidak akan tersisa menunjuk
+         * ke file yang sudah hilang jika database gagal.
+         */
+        if (
+            $gambarLama &&
+            Storage::disk('public')->exists($gambarLama)
+        ) {
+            $berhasilDihapus =
+                Storage::disk('public')->delete($gambarLama);
 
-        $berita->delete();
+            if (! $berhasilDihapus) {
+                return redirect()
+                    ->route('admin.berita.index')
+                    ->with(
+                        'sukses',
+                        'Berita berhasil dihapus, tetapi file sampul gagal dibersihkan.'
+                    );
+            }
+        }
 
         return redirect()
             ->route('admin.berita.index')
