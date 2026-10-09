@@ -1,60 +1,30 @@
 <?php
 
-use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Route;
 
-test('reset password link screen can be rendered', function () {
+test('forgot password screen is disabled', function () {
     $response = $this->get('/forgot-password');
 
-    $response->assertStatus(200);
+    $response->assertNotFound();
 });
 
-test('reset password link can be requested', function () {
-    Notification::fake();
+test('forgot password request is disabled', function () {
+    $response = $this->post('/forgot-password', [
+        'email' => 'admin@test.com',
+    ]);
 
-    $user = User::factory()->create();
-
-    $this->post('/forgot-password', ['email' => $user->email]);
-
-    Notification::assertSentTo($user, ResetPassword::class);
+    $response->assertNotFound();
 });
 
-test('reset password screen can be rendered', function () {
-    Notification::fake();
+test('reset password screen is disabled', function () {
+    $response = $this->get('/reset-password/test-token');
 
-    $user = User::factory()->create();
-
-    $this->post('/forgot-password', ['email' => $user->email]);
-
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
-        $response = $this->get('/reset-password/'.$notification->token);
-
-        $response->assertStatus(200);
-
-        return true;
-    });
+    $response->assertNotFound();
 });
 
-test('password can be reset with valid token', function () {
-    Notification::fake();
-
-    $user = User::factory()->create();
-
-    $this->post('/forgot-password', ['email' => $user->email]);
-
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
-        $response = $this->post('/reset-password', [
-            'token' => $notification->token,
-            'email' => $user->email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect(route('login'));
-
-        return true;
-    });
+test('password reset routes are not registered', function () {
+    expect(Route::has('password.request'))->toBeFalse()
+        ->and(Route::has('password.email'))->toBeFalse()
+        ->and(Route::has('password.reset'))->toBeFalse()
+        ->and(Route::has('password.store'))->toBeFalse();
 });

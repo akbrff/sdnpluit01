@@ -7,12 +7,14 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaPublicController;
 use App\Http\Controllers\GaleriPublicController;
 use App\Http\Controllers\StrukturOrganisasiPublicController;
+use App\Http\Controllers\KurikulumPublicController;
 
 use App\Http\Controllers\Admin\ProfilStatistikController;
 use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\BeritaController;
 use App\Http\Controllers\Admin\GaleriController;
 use App\Http\Controllers\Admin\StrukturOrganisasiController;
+use App\Http\Controllers\Admin\KurikulumController as AdminKurikulumController;
 
 
 // =========================
@@ -55,6 +57,12 @@ Route::get(
 )->name('struktur-organisasi.public');
 
 
+Route::get(
+    '/akademik/kurikulum',
+    [KurikulumPublicController::class, 'index']
+)->name('kurikulum.public');
+
+
 // =========================
 // DASHBOARD
 // =========================
@@ -62,7 +70,7 @@ Route::get(
 Route::get('/dashboard', function () {
     return view('dashboard');
 })
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 
@@ -111,6 +119,16 @@ Route::middleware(['auth'])
             '/profil-statistik',
             [ProfilStatistikController::class, 'update']
         )->name('profil-statistik.update');
+
+
+        // =========================
+        // KURIKULUM
+        // =========================
+
+        Route::resource(
+            'kurikulum',
+            AdminKurikulumController::class
+        )->except(['show']);
 
 
         // =========================

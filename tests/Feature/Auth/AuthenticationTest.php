@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\User;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -8,11 +9,16 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('admin can authenticate using the login screen', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'email' => $admin->email,
         'password' => 'password',
     ]);
 
@@ -20,21 +26,33 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+test('admin can not authenticate with invalid password', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $this->post('/login', [
-        'email' => $user->email,
+        'email' => $admin->email,
         'password' => 'wrong-password',
     ]);
 
     $this->assertGuest();
 });
 
-test('users can logout', function () {
-    $user = User::factory()->create();
+test('admin can logout', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = $this
+        ->actingAs($admin)
+        ->post('/logout');
 
     $this->assertGuest();
     $response->assertRedirect('/');

@@ -15,7 +15,7 @@
         rel="stylesheet"
     />
 
-    <!-- Scripts (Tailwind & Alpine) -->
+    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -26,7 +26,7 @@
 
     <div class="flex h-screen overflow-hidden">
 
-        <!-- Overlay untuk Mobile -->
+        <!-- Overlay Mobile -->
         <div
             x-show="sidebarOpen"
             @click="sidebarOpen = false"
@@ -34,15 +34,14 @@
         ></div>
 
 
-        <!-- Sidebar Utama -->
+        <!-- Sidebar -->
         <aside
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 px-4 py-8 overflow-y-auto transition-transform duration-300 ease-in-out bg-gray-900 lg:static lg:translate-x-0 lg:inset-0 shadow-xl"
         >
 
-            <!-- Logo / Judul Admin -->
+            <!-- Logo / Judul -->
             <div class="flex items-center justify-center mb-8">
-
                 <div class="text-center">
 
                     <h2 class="text-2xl font-bold text-white">
@@ -54,11 +53,10 @@
                     </p>
 
                 </div>
-
             </div>
 
 
-            <!-- Menu Navigasi Modul -->
+            <!-- Navigasi -->
             <nav class="flex flex-col flex-1 space-y-1">
 
                 <!-- Dashboard -->
@@ -66,7 +64,6 @@
                     href="{{ route('dashboard') }}"
                     class="flex items-center px-4 py-3 text-gray-100 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                 >
-
                     <svg
                         class="w-5 h-5 mr-3"
                         fill="none"
@@ -82,16 +79,13 @@
                     </svg>
 
                     <span>Dashboard</span>
-
                 </a>
 
 
                 <div class="pt-4 pb-2">
-
                     <p class="px-4 text-xs font-semibold tracking-wider text-gray-500 uppercase">
                         Manajemen Website
                     </p>
-
                 </div>
 
 
@@ -115,7 +109,7 @@
 
                 <!-- Kurikulum -->
                 <a
-                    href="#"
+                    href="{{ route('admin.kurikulum.index') }}"
                     class="flex items-center px-4 py-2.5 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
                 >
                     <span>Kurikulum</span>
@@ -160,21 +154,19 @@
             </nav>
 
 
-            <!-- Tombol Logout -->
+            <!-- Logout -->
             <div class="mt-auto pt-8">
 
                 <form
                     method="POST"
                     action="{{ route('logout') }}"
                 >
-
                     @csrf
 
                     <button
                         type="submit"
                         class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
                     >
-
                         <svg
                             class="w-5 h-5 mr-2"
                             fill="none"
@@ -185,14 +177,12 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 013-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                             ></path>
                         </svg>
 
                         Logout
-
                     </button>
-
                 </form>
 
             </div>
@@ -200,18 +190,17 @@
         </aside>
 
 
-        <!-- Area Konten Utama -->
+        <!-- Konten Utama -->
         <div class="flex flex-col flex-1 w-full overflow-hidden">
 
-            <!-- Topbar Header -->
+            <!-- Header -->
             <header class="flex items-center justify-between px-6 py-4 bg-white border-b shadow-sm">
 
-                <!-- Tombol Hamburger Mobile -->
+                <!-- Hamburger Mobile -->
                 <button
                     @click="sidebarOpen = true"
                     class="text-gray-500 focus:outline-none lg:hidden hover:text-gray-700"
                 >
-
                     <svg
                         class="w-6 h-6"
                         viewBox="0 0 24 24"
@@ -226,11 +215,10 @@
                             stroke-linejoin="round"
                         />
                     </svg>
-
                 </button>
 
 
-                <!-- Nama User yang Login -->
+                <!-- Nama Administrator -->
                 <div class="flex items-center ml-auto">
 
                     <span class="text-sm font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
@@ -242,24 +230,20 @@
             </header>
 
 
-            <!-- Konten Halaman -->
+            <!-- Isi Halaman -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 
-                <!-- Judul Halaman -->
                 @if (isset($header))
 
                     <div class="mb-6">
-
                         <h2 class="text-2xl font-bold text-gray-800">
                             {{ $header }}
                         </h2>
-
                     </div>
 
                 @endif
 
 
-                <!-- Tempat Konten CRUD -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     {{ $slot }}
                 </div>

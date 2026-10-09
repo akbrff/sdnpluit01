@@ -16,12 +16,29 @@ class Admin extends Authenticatable
     const CREATED_AT = 'dibuat_pada';
     const UPDATED_AT = 'diperbarui_pada';
 
-    protected $fillable = ['nama', 'email', 'kata_sandi', 'peran'];
+    protected $fillable = [
+        'nama',
+        'email',
+        'kata_sandi',
+        'peran',
+    ];
 
-    protected $hidden = ['kata_sandi'];
+    protected $hidden = [
+        'kata_sandi',
+    ];
 
-    // Laravel auth secara default mencari kolom "password" -> arahkan ke "kata_sandi".
-    public function getAuthPassword()
+    /**
+     * Nama kolom password yang digunakan Laravel.
+     */
+    public function getAuthPasswordName(): string
+    {
+        return 'kata_sandi';
+    }
+
+    /**
+     * Nilai password yang digunakan Laravel untuk autentikasi.
+     */
+    public function getAuthPassword(): string
     {
         return $this->kata_sandi;
     }

@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
 class PasswordController extends Controller
 {
     /**
-     * Update the user's password.
+     * Update the administrator's password.
      */
     public function update(Request $request): RedirectResponse
     {
@@ -20,9 +20,10 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+        $admin = $request->user();
+
+        $admin->kata_sandi = Hash::make($validated['password']);
+        $admin->save();
 
         return back()->with('status', 'password-updated');
     }

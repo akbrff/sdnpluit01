@@ -1,32 +1,54 @@
 <?php
 
-use App\Models\User;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 
 test('confirm password screen can be rendered', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
-    $response = $this->actingAs($user)->get('/confirm-password');
+    $response = $this
+        ->actingAs($admin)
+        ->get('/confirm-password');
 
     $response->assertStatus(200);
 });
 
 test('password can be confirmed', function () {
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->post('/confirm-password', [
-        'password' => 'password',
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
     ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->post('/confirm-password', [
+            'password' => 'password',
+        ]);
 
     $response->assertRedirect();
     $response->assertSessionHasNoErrors();
 });
 
 test('password is not confirmed with invalid password', function () {
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->post('/confirm-password', [
-        'password' => 'wrong-password',
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
     ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->post('/confirm-password', [
+            'password' => 'wrong-password',
+        ]);
 
     $response->assertSessionHasErrors();
 });

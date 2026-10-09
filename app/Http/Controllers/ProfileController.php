@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the administrator's profile form.
      */
     public function edit(Request $request): View
     {
@@ -22,16 +22,14 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update the administrator's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $admin = $request->user();
 
-        $validated = $request->validated();
-
-        $admin->nama = $validated['name'];
-        $admin->email = $validated['email'];
+        $admin->nama = $request->validated('nama');
+        $admin->email = $request->validated('email');
 
         $admin->save();
 
@@ -40,7 +38,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Delete the administrator's account.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -48,11 +46,11 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
+        $admin = $request->user();
 
         Auth::logout();
 
-        $user->delete();
+        $admin->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

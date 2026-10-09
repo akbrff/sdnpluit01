@@ -1,19 +1,23 @@
 <?php
 
-test('registration screen can be rendered', function () {
+use Illuminate\Support\Facades\Route;
+
+test('public registration is disabled', function () {
     $response = $this->get('/register');
 
-    $response->assertStatus(200);
+    $response->assertNotFound();
+
+    expect(Route::has('register'))->toBeFalse();
 });
 
-test('new users can register', function () {
+test('registration request is not available', function () {
     $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertNotFound();
+    $this->assertGuest();
 });
