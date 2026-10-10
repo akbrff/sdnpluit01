@@ -1,60 +1,113 @@
 <?php
 
-use App\Models\User;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 
 test('profile page is displayed', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->get('/profile');
 
     $response->assertOk();
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'nama' => 'Admin Baru',
+            'email' => 'baru@example.com',
         ]);
 
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect('/profile');
 
-    $user->refresh();
+    $admin->refresh();
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
-    $this->assertNull($user->email_verified_at);
+    $this->assertSame('Admin Baru', $admin->nama);
+    $this->assertSame('baru@example.com', $admin->email);
 });
 
-test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create();
+test('admin can keep the same email when updating profile', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => $user->email,
+            'nama' => 'Admin Updated',
+            'email' => $admin->email,
         ]);
 
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect('/profile');
 
-    $this->assertNotNull($user->refresh()->email_verified_at);
+    $this->assertSame(
+        'admin@test.com',
+        $admin->refresh()->email
+    );
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+test('last admin cannot delete their account', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
+        ->from('/profile')
+        ->delete('/profile', [
+            'password' => 'password',
+        ]);
+
+    $response
+        ->assertSessionHasErrorsIn('userDeletion', 'password')
+        ->assertRedirect('/profile');
+
+    $this->assertAuthenticated();
+    $this->assertNotNull($admin->fresh());
+});
+
+test('admin can delete their account when another admin exists', function () {
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
+
+    Admin::create([
+        'nama' => 'Admin Kedua',
+        'email' => 'admin2@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
+
+    $response = $this
+        ->actingAs($admin)
         ->delete('/profile', [
             'password' => 'password',
         ]);
@@ -64,22 +117,34 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+    $this->assertNull($admin->fresh());
+
+    $this->assertDatabaseHas('admin', [
+        'email' => 'admin2@test.com',
+    ]);
 });
 
 test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->from('/profile')
         ->delete('/profile', [
             'password' => 'wrong-password',
         ]);
 
     $response
-        ->assertSessionHasErrorsIn('userDeletion', 'password')
+        ->assertSessionHasErrorsIn(
+            'userDeletion',
+            'password'
+        )
         ->assertRedirect('/profile');
 
-    $this->assertNotNull($user->fresh());
+    $this->assertNotNull($admin->fresh());
 });

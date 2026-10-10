@@ -1,13 +1,18 @@
 <?php
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
 
 test('password can be updated', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->from('/profile')
         ->put('/password', [
             'current_password' => 'password',
@@ -19,14 +24,24 @@ test('password can be updated', function () {
         ->assertSessionHasNoErrors()
         ->assertRedirect('/profile');
 
-    $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+    $this->assertTrue(
+        Hash::check(
+            'new-password',
+            $admin->refresh()->kata_sandi
+        )
+    );
 });
 
 test('correct password must be provided to update password', function () {
-    $user = User::factory()->create();
+    $admin = Admin::create([
+        'nama' => 'Admin Test',
+        'email' => 'admin@test.com',
+        'kata_sandi' => Hash::make('password'),
+        'peran' => 'superadmin',
+    ]);
 
     $response = $this
-        ->actingAs($user)
+        ->actingAs($admin)
         ->from('/profile')
         ->put('/password', [
             'current_password' => 'wrong-password',
@@ -35,6 +50,9 @@ test('correct password must be provided to update password', function () {
         ]);
 
     $response
-        ->assertSessionHasErrorsIn('updatePassword', 'current_password')
+        ->assertSessionHasErrorsIn(
+            'updatePassword',
+            'current_password'
+        )
         ->assertRedirect('/profile');
 });

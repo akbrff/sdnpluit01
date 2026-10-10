@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the administrator's profile form.
      */
     public function edit(Request $request): View
     {
@@ -22,23 +23,23 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update the administrator's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $admin = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        $admin->nama = $request->validated('nama');
+        $admin->email = $request->validated('email');
 
-        $request->user()->save();
+        $admin->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')
+            ->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Delete the administrator's account.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -46,11 +47,20 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
+        $admin = $request->user();
 
-        Auth::logout();
+        // Cegah penghapusan admin terakhir agar website
+        // tidak kehilangan seluruh akses administrator.
+        if (Admin::query()->count() <= 1) {
+            return Redirect::route('profile.edit')
+                ->withErrors([
+                    'password' => 'Akun admin terakhir tidak dapat dihapus.',
+                ], 'userDeletion');
+        }
 
-        $user->delete();
+        $admin->delete();
+
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
